@@ -1,111 +1,127 @@
-const submit = document.querySelector('#submit')
-const form = document.querySelector('#pokeForm')
-const card = document.querySelector('#card') //contiene la tarjeta de los pokemons
-const container = document.querySelector('#container')
-const img = document.querySelector('#pokeImg')
-const closeCard = document.querySelector('#close')
+(function(){
+    const pokeFinder = {
+        init: function(){
+            this.cacheDOM()
+            this.bindings()
+        },
+        cacheDOM: function(){
+            this.submit = document.querySelector('#submit')
+            this.form = document.querySelector('#pokeForm')
+            this.img = document.querySelector('#pokeImg')
+            this.card = document.querySelector('#card')
+            this.closeCard = document.querySelector('#close')
+        },
 
-//paginacion data
-let pag = 0
+        bindings: function(){
+            this.submit.addEventListener('click',this.renderPokemon.bind(this))
+            this.closeCard.addEventListener('click',this.closeCardFunc.bind(this))
+        },
 
+        render: function(data){
+            this.img.src = data.sprites.other['official-artwork'].front_default
+            this.card.style = 'display: block'
+        },
+        fetchPokemon: async function(pokemon){
+            const get = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemon}`)
+            const data = await get.json()
+            return data
+        },
+        renderPokemon: function(ev){
+            ev.preventDefault()
+            this.fetchPokemon(this.form.pokeInput.value)
+            .then(data => {this.render(data)})
+            .catch(err => {
+                console.log('there is an error:',err.message)
+                alert('Must enter a valid pokemon name')})
+                this.form.pokeInput.value = ''
+        },
 
-// trae data de cada pokemon segun el nombre retorna una promesa
-const getPokemon = async (pokemon) => {
-    const get = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemon}`)
-    const data = await get.json()
-    return data
-}
+        closeCardFunc: function(ev){
+            ev.target.parentElement.style = 'display: none'
+            this.img.src = ''
+        }
 
-// evento del submit que llama la funcion getPokemon() la cual llama a la funcion render()
-submit.addEventListener('click',(ev)=>{
-    ev.preventDefault()
-    getPokemon(form.pokeInput.value)
-        .then(data => render(data))
-        .catch(err => {
-            console.log('there is an error:',err.message)
-            alert('Must enter a valid pokemon name')})
-            form.pokeInput.value = ''
-})
+    }
+    pokeFinder.init()
 
+    pokeCards = {
+        pag : 0,
+        init: function(){
+            this.cacheDOM()
+            this.bindings()
+            this.render()
+        },
 
-//renderiza la tarjeta del pokemon elegido
-const render = (data) => {
-    
-    img.src = data.sprites.other['official-artwork'].front_default
-    card.style = 'display: block'
-}
+        cacheDOM: function(){
+            this.container = document.querySelector('#container')
+        },
 
-closeCard.addEventListener('click',(ev) => {
-    ev.target.parentElement.style = 'display: none'
-    img.src = ''
-})
+        bindings: function(){
 
+        },
 
-// trae data de todos los pokemon con su url
-const getData = async(offSet=0)=>{
-    const get = await fetch(`https://pokeapi.co/api/v2/pokemon?limit=50&offset=${offSet}`)
-    const data = await get.json()
-    return data
-}
-/////****  llamada a la fucion que renderiza la grilla de pokemon  ****////// 
-
-
-getData().then(data => renderCards(data))
-
-//llama a cada uno de los pokemon y realiza un fetch en sus url
-const renderCards = async (data) => {
-    container.innerHTML = ` <div id="leftPag" class="pagination">
+        render: function(){
+            this.fetchAllData().then(data => this.renderCards(data))
+        },
+        fetchAllData: async function(offSet=0){
+            const get = await fetch(`https://pokeapi.co/api/v2/pokemon?limit=50&offset=${offSet}`)
+            const data = await get.json()
+            return data
+        },
+        fetchPokemon: async function(pokemon){
+            const get = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemon}`)
+            const data = await get.json()
+            return data
+        },
+        renderCards: async function(data){
+            this.container.innerHTML = ` <div id="leftPag" class="pagination">
                                 <div id="arrowLeft"></div>
                             </div>
                             <div id="loading" style="display: block"></div>
                             <div id="rightPag" class="pagination">
                                 <div id="arrowRight"></div>
                             </div>`
-    //llama los elementos para la paginacion
-    const leftPag = document.querySelector('#leftPag')
-    const rightPag = document.querySelector('#rightPag')
-
-    //llama la funcion getData() con el nuevo offset para los datos de la api
-    rightPag.addEventListener('click',()=>{
-        if(pag<1069){
-            pag+=50
-            getData(String(pag)).then(data => renderCards(data))
+            const leftPag = document.querySelector('#leftPag')
+            const rightPag = document.querySelector('#rightPag')
+            rightPag.addEventListener('click',()=>{
+                if(this.pag<1069){
+                    this.pag+=50
+                    this.fetchAllData(String(this.pag)).then(data => this.renderCards(data))
+                }                
+            })
+            leftPag.addEventListener('click',()=>{
+            if(this.pag>=50){
+                this.pag-=50
+                this.fetchAllData(String(this.pag)).then(data => this.renderCards(data))
+            }
+            
+                })
+                let _pokeArr = Promise.all(data.results.map(pokemon => this.fetchPokemon(pokemon.name)))
+                _pokeArr.then(data=>data.map(poke =>this.dataPokemon(poke,poke.name)))
+        },
+        dataPokemon: function(data,name){
+            let div = document.createElement('div')
+            div.setAttribute('id',name)
+            div.classList = 'pokeCard'
+            let h3 = document.createElement('h3')
+            h3.innerHTML = name
+            this.container.appendChild(div)
+            let divImg = document.createElement('div')
+            let img = document.createElement('img')
+            img.src = data.sprites.front_default
+            divImg.appendChild(img)
+            div.appendChild(divImg)
+            div.appendChild(h3)
+            div.addEventListener('click',(ev)=>{
+                this.fetchPokemon(name)
+                    .then(data => pokeFinder.render(data))
+            })
+            const loading = document.querySelector('#loading')
+            loading.style = 'display : none'
         }
-        
-    })
 
-    leftPag.addEventListener('click',()=>{
-        if(pag>=50){
-            pag-=50
-            getData(String(pag)).then(data => renderCards(data))
-        }
         
-    })
-//genera una array de promesas para luego iterar con la funcion que renderiza
-    let _pokeArr = Promise.all(data.results.map(pokemon => getPokemon(pokemon.name)))
-    console.log(_pokeArr)
-    _pokeArr.then(data=>data.map(poke =>dataPokemon(poke,poke.name)))
-}
-// renderiza las tarjetas de cada pokemon
-const dataPokemon = (data,name) => {
-    let div = document.createElement('div')
-    div.setAttribute('id',name)
-    div.classList = 'pokeCard'
-    let h3 = document.createElement('h3')
-    h3.innerHTML = name
-    container.appendChild(div)
-    let divImg = document.createElement('div')
-    let img = document.createElement('img')
-    img.src = data.sprites.front_default
-    divImg.appendChild(img)
-    div.appendChild(divImg)
-    div.appendChild(h3)
-    div.addEventListener('click',(ev)=>{
-        getPokemon(name)
-        .then(data => render(data))
-    })
-    const loading = document.querySelector('#loading')
-loading.style = 'display : none'
-}
-
+    }
+    pokeCards.init()
+})()
 
