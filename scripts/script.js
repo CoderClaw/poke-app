@@ -53,11 +53,25 @@
         },
 
         cacheDOM: function(){
-            this.container = document.querySelector('#container')
+            this.container = document.querySelector('#cardBox')
+            this.leftPag = document.querySelector('#leftPag')
+            this.rightPag = document.querySelector('#rightPag')
         },
 
         bindings: function(){
-
+            this.rightPag.addEventListener('click',()=>{
+                if(this.pag<1069){
+                    this.pag+=50
+                    this.fetchAllData(String(this.pag)).then(data => this.renderCards(data))
+                }                
+            })
+            this.leftPag.addEventListener('click',()=>{
+                if(this.pag>=50){
+                    this.pag-=50
+                    this.fetchAllData(String(this.pag)).then(data => this.renderCards(data))
+                }
+                
+                    })
         },
 
         render: function(){
@@ -73,45 +87,27 @@
             const data = await get.json()
             return data
         },
+
         renderCards: async function(data){
-            this.container.innerHTML = ` <div id="leftPag" class="pagination">
-                                <div id="arrowLeft"></div>
-                            </div>
-                            <div id="loading" style="display: block"></div>
-                            <div id="rightPag" class="pagination">
-                                <div id="arrowRight"></div>
-                            </div>`
-            const leftPag = document.querySelector('#leftPag')
-            const rightPag = document.querySelector('#rightPag')
-            rightPag.addEventListener('click',()=>{
-                if(this.pag<1069){
-                    this.pag+=50
-                    this.fetchAllData(String(this.pag)).then(data => this.renderCards(data))
-                }                
-            })
-            leftPag.addEventListener('click',()=>{
-            if(this.pag>=50){
-                this.pag-=50
-                this.fetchAllData(String(this.pag)).then(data => this.renderCards(data))
-            }
-            
-                })
-                let _pokeArr = Promise.all(data.results.map(pokemon => this.fetchPokemon(pokemon.name)))
-                _pokeArr.then(data=>data.map(poke =>this.dataPokemon(poke,poke.name)))
+            this.container.innerHTML = '<div id="loading" style="display: block"></div>'
+            console.log(this.container.innerHTML)     
+            let _pokeArr = Promise.all(data.results.map(pokemon => this.fetchPokemon(pokemon.name)))
+            _pokeArr.then(data=>data.map(poke =>this.dataPokemon(poke,poke.name)))
         },
+
         dataPokemon: function(data,name){
             let div = document.createElement('div')
             div.setAttribute('id',name)
             div.classList = 'pokeCard'
             let h3 = document.createElement('h3')
             h3.innerHTML = name
-            this.container.appendChild(div)
             let divImg = document.createElement('div')
             let img = document.createElement('img')
             img.src = data.sprites.front_default
             divImg.appendChild(img)
             div.appendChild(divImg)
             div.appendChild(h3)
+            this.container.appendChild(div)
             div.addEventListener('click',(ev)=>{
                 this.fetchPokemon(name)
                     .then(data => pokeFinder.render(data))
