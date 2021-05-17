@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@600&display=swap" rel="stylesheet"> 
+    <link rel="stylesheet" href="style.css">
+    <title>Poke App</title>
+</head>
+<body>
+    <header>
+        <h1>PokeApp</h1>
+    <form id="pokeForm">
+        <label for="pokeInput">Enter a valid pokemon name</label>
+        <input type="text" name="pokeInput">
+        <input id="submit" type="submit" value="Submit">
+    </form>
+    </header>
+    
+    <div id="card">
+        <div id="close">x</div>
+        <img id="pokeImg" src="" alt="">
+    </div>
+    <div id="container">
+        <div id="leftPag" class="pagination">
+            <div id="arrowLeft"></div>
+        </div>
+        <div id="rightPag" class="pagination">
+            <div id="arrowRight"></div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
