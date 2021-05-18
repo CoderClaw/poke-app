@@ -40,7 +40,7 @@
             ev.target.parentElement.style = 'display: none'
             this.img.src = ''
         }
-
+        
     }
     pokeFinder.init()
 
@@ -61,13 +61,13 @@
         bindings: function(){
             this.rightPag.addEventListener('click',()=>{
                 if(this.pag<1069){
-                    this.pag+=50
+                    this.pag+=20
                     this.fetchAllData(String(this.pag)).then(data => this.renderCards(data))
                 }                
             })
             this.leftPag.addEventListener('click',()=>{
-                if(this.pag>=50){
-                    this.pag-=50
+                if(this.pag>=20){
+                    this.pag-=20
                     this.fetchAllData(String(this.pag)).then(data => this.renderCards(data))
                 }
                 
@@ -78,7 +78,7 @@
             this.fetchAllData().then(data => this.renderCards(data))
         },
         fetchAllData: async function(offSet=0){
-            const get = await fetch(`https://pokeapi.co/api/v2/pokemon?limit=50&offset=${offSet}`)
+            const get = await fetch(`https://pokeapi.co/api/v2/pokemon?limit=20&offset=${offSet}`)
             const data = await get.json()
             return data
         },
@@ -95,15 +95,21 @@
             _pokeArr.then(data=>data.map(poke =>this.dataPokemon(poke,poke.name)))
         },
 
-        dataPokemon: function(data,name){
+        dataPokemon: async function(data,name){
             let div = document.createElement('div')
             div.setAttribute('id',name)
             div.classList = 'pokeCard'
             let h3 = document.createElement('h3')
             h3.innerHTML = name
             let divImg = document.createElement('div')
+            divImg.classList = 'img-div loading'
             let img = document.createElement('img')
-            img.src = data.sprites.front_default
+            img.src = await data.sprites.other['official-artwork'].front_default
+            img.classList = 'img-loading'
+            img.onload = ()=>{
+                img.classList = 'img-loaded'
+                divImg.classList = 'img-div' 
+            }
             divImg.appendChild(img)
             div.appendChild(divImg)
             div.appendChild(h3)
