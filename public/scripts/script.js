@@ -89,7 +89,7 @@
         },
 
         renderCards: async function(data){
-            this.container.innerHTML = '<div id="loading" style="display: block"></div>'
+            this.container.innerHTML = ''
             console.log(this.container.innerHTML)     
             let _pokeArr = Promise.all(data.results.map(pokemon => this.fetchPokemon(pokemon.name)))
             _pokeArr.then(data=>data.map(poke =>this.dataPokemon(poke,poke.name)))
@@ -118,8 +118,7 @@
                 this.fetchPokemon(name)
                     .then(data => pokeFinder.render(data))
             })
-            const loading = document.querySelector('#loading')
-            loading.style = 'display : none'
+            
         }
 
         

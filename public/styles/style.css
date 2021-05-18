@@ -65,6 +65,7 @@ header{
 }
 .pokeCard:hover {
     transform: scale(1.2);
+    height:60vh;
     z-index: 888;
 }
 
